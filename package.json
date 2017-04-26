@@ -9,6 +9,7 @@
   "author": "Max Redmond",
   "license": "ISC",
   "dependencies": {
-    "gm": "^1.23.0"
+    "gm": "^1.23.0",
+    "request": "^2.81.0"
   }
 }

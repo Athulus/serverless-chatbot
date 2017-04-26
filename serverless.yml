@@ -72,6 +72,12 @@ functions:
           event: s3:ObjectCreated:*
   slackupdate:
     handler: slackupdate.execute
+    environment:
+      POST_MESSAGE_URL: 'https://slack.com/api/chat.postMessage?'
+      BOT_ACCESS_TOKEN: 'xoxb-174199654288-ZaIjVdX9G2xFpCZC0mGB5C9G'
+      CHANNEL_ID: 'C54P8TJ5R'
+      SHORTENER_API_KEY: 'AIzaSyCxWll4C1lTJenn-9ZD8LYFp9zVET94C5o'
+      SHORTENER_API_URL: 'https://www.googleapis.com/urlshortener/v1/url?'
     events:
       - s3:
           bucket: ${self:custom.transformBucket}

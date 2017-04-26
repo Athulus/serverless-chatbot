@@ -1,0 +1,14 @@
+{
+  "name": "serverless-chatbot",
+  "version": "1.0.0",
+  "description": "slack bot built using the serverless framework",
+  "main": "faceswap.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Max Redmond",
+  "license": "ISC",
+  "dependencies": {
+    "gm": "^1.23.0"
+  }
+}

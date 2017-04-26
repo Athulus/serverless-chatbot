@@ -64,10 +64,10 @@ functions:
           path: echo
           method: post
     environment:
-      POST_MESSAGE_URL:'https://slack.com/api/chat.postMessage?'
+      POST_MESSAGE_URL: 'https://slack.com/api/chat.postMessage?'
       BOT_ACCESS_TOKEN: 'xoxb-174199654288-ZaIjVdX9G2xFpCZC0mGB5C9G'
       BOT_ID: 'U545VK88G'
-      VERIFICATION_TOKEN: 'wiM5uBXy2CcvIfTnyIdfhoVw'
+      VERIFICATION_TOKEN: 'Py3M22CgliCE9VYBVgg1yGmV'
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

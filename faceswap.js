@@ -14,7 +14,7 @@ function getEmojiBasedOnSentiment(emotion) {
   if (emotion) {
     return 'emoji/' + emotion[0].Type.toLowerCase() + '.png';
   } else {
-    return 'emoji/happy.png';
+    return 'emoji/unknown.png';
   }
 }
 

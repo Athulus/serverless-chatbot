@@ -25,6 +25,12 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource:
+        - arn:aws:dynamodb:*:*:table/${self:custom.teamTable}
+    - Effect: "Allow"
+      Action:
         - rekognition:DetectFaces
       Resource: "*"
     - Effect: "Allow"
@@ -41,8 +47,20 @@ provider:
 custom:
   uploadBucket: ${self:service}-${self:provider.stage}-uploads-max-redmond
   transformBucket: ${self:service}-${self:provider.stage}-transform-max-redmond
+  teamTable: ${self:service}-${self:provider.stage}-teams
 
 functions:
+  install:
+    handler: install.endpoint
+    environment:
+      CLIENT_ID: '175669429926.174792068483'
+      CLIENT_SECRET: 48aabd9147c82894047ed1e04a555434
+      SLACK_OAUTH: 'https://slack.com/api/oauth.access?'
+      TABLE_NAME: ${self:custom.teamTable}
+    events:
+      - http:
+          path: install
+          method: get
   bot:
     handler: bot.endpoint
   hello:
@@ -82,6 +100,22 @@ functions:
       - s3:
           bucket: ${self:custom.transformBucket}
           event: s3:ObjectCreated:*
+
+resources:
+  Resources:
+    NewResource:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.teamTable}
+        AttributeDefinitions:
+          - AttributeName: team_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: team_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

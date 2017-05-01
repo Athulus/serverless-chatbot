@@ -64,9 +64,28 @@ const writeToSlack = function (url) {
     });
 }
 
+const getTeamId = function(bucket, key){
+  console.log("getting teamId from event object")
+
+  return new Promise((resolve, reject) => {
+    const teamId = s3.getObject({
+      Bucket: bucket,
+      Key: key
+    }, function (error, data) {
+      if (error) {
+        reject(error);
+      } else {
+        console.log("got object for Metadata", data)
+        resolve(data.Metadata.team_id)
+      }
+    })
+  });
+}
+
 module.exports.execute = (event, context, callback) => {
     const bucket = event.Records[0].s3.bucket.name;
     const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
+    const teamId = getTeamId(bucket, key);
 
     getSignedUrl(bucket, key)
         .then((url) => getShortUrl(url))

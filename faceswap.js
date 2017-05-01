@@ -124,16 +124,16 @@ const saveNewImageToSystem = function (image, key) {
   });
 }
 
-const uploadToBucket = function (key) {
+const uploadToBucket = function (key, metaData) {
   console.log('Uploading image to S3');
-
   const bodystream = fs.createReadStream(process.env.TEMP_FOLDER + process.env.OUTPUT_PREFIX + key);
-
   return new Promise((resolve, reject) => {
     s3.putObject({
       Bucket: process.env.TRANSFORM_BUCKET,
       Key: key,
-      Body: bodystream
+      Body: bodystream,
+      Metadata: metaData
+
     }, function (error, data) {
       if (error) {
         reject(error);
@@ -144,12 +144,30 @@ const uploadToBucket = function (key) {
   });
 };
 
+const getMetaData = function(bucket, key){
+  console.log("getting matadata from uploaded object")
+
+  return new Promise((resolve, reject) => {
+    s3.getObject({
+      Bucket: bucket,
+      Key: key
+    }, function (error, data) {
+      if (error) {
+        reject(error);
+      } else {
+        console.log("got object for Metadata", data);
+        console.log(data.Metadata);
+        resolve(data.Metadata);
+      }
+    });
+  });
+}
+
 module.exports.execute = (event, context, callback) => {
   console.log('Received event', event);
 
   const bucket = event.Records[0].s3.bucket.name;
   const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
-
   let fd = null;
 
   detectFaces(bucket, key)
@@ -160,7 +178,8 @@ module.exports.execute = (event, context, callback) => {
     .then(() => analyseImage(key))
     .then((imagedata) => processFaces(key, imagedata, fd))
     .then((image) => saveNewImageToSystem(image, key))
-    .then(() => uploadToBucket(key))
+    .then(() => getMetaData(bucket,key))
+    .then((metaData) => uploadToBucket(key, metaData))
     .then(() => {
       console.log('Processed image');
       callback(null, 'Success')

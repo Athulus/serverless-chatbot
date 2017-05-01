@@ -63,6 +63,7 @@ functions:
           method: get
   bot:
     handler: bot.endpoint
+    
   hello:
     handler: handler.endpoint
     events:
@@ -71,12 +72,12 @@ functions:
           method: post
     environment:
       POST_MESSAGE_URL: 'https://slack.com/api/chat.postMessage?'
-      BOT_ACCESS_TOKEN: 'xoxb-174199654288-ZaIjVdX9G2xFpCZC0mGB5C9G'
       BOT_ID: 'U545VK88G'
       VERIFICATION_TOKEN: 'Py3M22CgliCE9VYBVgg1yGmV'
       UPLOAD_BUCKET: ${self:custom.uploadBucket}
       SLACK_HOSTNAME: 'files.slack.com'
       TEMP_FOLDER: '/tmp/'
+      TEAMS_TABLE: ${self:custom.teamTable}
   faceswap:
     handler: faceswap.execute
     environment:

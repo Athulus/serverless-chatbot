@@ -7,7 +7,7 @@ module.exports.endpoint = (event, context, callback) => {
     console.log('Received event', event);
 
     const request = {
-        token: 'xoxb-174199654288-ZaIjVdX9G2xFpCZC0mGB5C9G'
+        token: 'BOT_USER_TOKEN_HERE'
     }
 
     const url = 'https://slack.com/api/users.list?' + qs.stringify(request);

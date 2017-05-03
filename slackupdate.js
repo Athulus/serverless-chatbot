@@ -5,6 +5,7 @@ const https = require('https');
 const qs = require('querystring');
 const request = require('request');
 const s3 = new aws.S3();
+const db = new aws.DynamoDB();
 
 const getSignedUrl = function (bucket, key) {
     console.log('Getting signed url for bucket');
@@ -45,13 +46,12 @@ const getShortUrl = function (url) {
     });
 }
 
-const writeToSlack = function (url) {
+const writeToSlack = function (url, metadata, botAccessToken) {
     console.log('Posting image back to slack');
-
     return new Promise((resolve, reject) => {
         const slackParams = {
-            token: process.env.BOT_ACCESS_TOKEN,
-            channel: process.env.CHANNEL_ID,
+            token: botAccessToken,
+            channel: metadata.channelid,
             text: url
         }
 
@@ -64,11 +64,11 @@ const writeToSlack = function (url) {
     });
 }
 
-const getTeamId = function(bucket, key){
-  console.log("getting teamId from event object")
+const getMetadata = function(bucket, key){
+  console.log("getting metadata from event object")
 
   return new Promise((resolve, reject) => {
-    const teamId = s3.getObject({
+    const metadata = s3.getObject({
       Bucket: bucket,
       Key: key
     }, function (error, data) {
@@ -76,20 +76,45 @@ const getTeamId = function(bucket, key){
         reject(error);
       } else {
         console.log("got object for Metadata", data)
-        resolve(data.Metadata.team_id)
+        resolve(data.Metadata)
       }
     })
   });
-}
+};
+
+const getBotAccessToken = function(metadata) {
+  console.log("test tteam d ",metadata)
+    return new Promise((resolve, reject) => {
+        const params = {
+            TableName: process.env.TEAMS_TABLE,
+            Key: {
+                "team_id": {
+                    S: metadata.teamid
+                }
+            }
+        };
+
+        db.getItem(params, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data.Item.bot.M.bot_access_token.S);
+            }
+        });
+    });
+};
 
 module.exports.execute = (event, context, callback) => {
     const bucket = event.Records[0].s3.bucket.name;
     const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
-    const teamId = getTeamId(bucket, key);
+    const metadata = getMetadata(bucket, key);
+    const botAccessToken = metadata.then((team) => getBotAccessToken(team));
 
-    getSignedUrl(bucket, key)
-        .then((url) => getShortUrl(url))
-        .then((url) => writeToSlack(url))
+    const imageUrl = getSignedUrl(bucket, key)
+        .then((url) => getShortUrl(url));
+
+    Promise.all([imageUrl, metadata, botAccessToken])
+        .then(([imageUrl,metadata,botAccessToken]) => writeToSlack(imageUrl,metadata,botAccessToken))
         .then(() => {
             console.log('Finished processing image');
             callback(null);

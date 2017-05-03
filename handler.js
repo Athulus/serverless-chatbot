@@ -55,19 +55,20 @@ const downloadFileToSystem = function(accessToken, path, filename) {
     });
 };
 
-const uploadToBucket = function(filename, teamId) {
+const uploadToBucket = function(filename, teamId, channel) {
     console.log('Uploading image to S3');
 
     const bodystream = fs.createReadStream(process.env.TEMP_FOLDER + filename);
-
+    const metaDataParam = {
+      teamid: teamId,
+      channelid: channel
+    }
     return new Promise((resolve, reject) => {
         s3.putObject({
             Bucket: process.env.UPLOAD_BUCKET,
             Key: filename,
             Body: bodystream,
-            Metadata: {
-            'team-id': "'" + teamId + "'"
-          }
+            Metadata: metaDataParam
         }, function(error, data) {
             if (error) {
                 console.log("error uploading to s3",error);
@@ -117,7 +118,7 @@ module.exports.endpoint = (event, context, callback) => {
                 accessToken = token;
                 return downloadFileToSystem(accessToken, path, filename);
             })
-            .then(() => uploadToBucket(filename,request.team_id))
+            .then(() => uploadToBucket(filename,request.team_id, channel))
             .then(() => updateStatusInSlack(accessToken, filename, channel))
             .then(() => {
                 console.log('Returning result')
